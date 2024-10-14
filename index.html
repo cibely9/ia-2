@@ -7,57 +7,168 @@
   <link rel="stylesheet" href="style.css">
   <title>NeuroChat</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e5e5e5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
 
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .chat-container {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 400px;
+      height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .user-message {
+      background-color: #d1e7dd; /* Verde claro */
+      align-self: flex-end;
+    }
+
+    .ai-message {
+      background-color: #f8d7da; /* Vermelho claro */
+      align-self: flex-start;
+    }
+
+    textarea {
+      width: 100%;
+      height: 60px;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      resize: none;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="button"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+      margin-top: 10px;
+    }
+
+    input[type="button"]:hover {
+      background-color: #45a049;
+      transform: translateY(-2px);
+    }
+
+    input[type="button"]:active {
+      transform: translateY(0);
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #666;
+    }
+  </style>
 </head>
 
 <body>
   <h1>NeuroChat</h1>
+  <div class="chat-container" id="chat-container">
+    <!-- Mensagens serão adicionadas aqui -->
+  </div>
+  
   <textarea name="prompt" id="prompt" placeholder="Digite seu prompt aqui..."></textarea>
-  <br>
   <input type="button" value="Enviar" id="botao_enviar" />
-  <br>
-  <br>
-  <label for="resposta">Resposta de IA:</label>
-  <br>
-  <textarea name="resposta" id="resposta" readonly></textarea>
-
+  
   <footer>
     <p>Autora: Cibely Jorge</p>
   </footer>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+  <script type="module">
+    import { GoogleGenerativeAI } from "@google/generative-ai";
+
+    // Fetch your API_KEY
+    const API_KEY = "AIzaSyADID51Xqt_CDvL1fpkHVmOysANMp3U_L4";
+
+    // Access your API key
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    async function run() {
+      let prompt = document.getElementById("prompt").value.trim();
+
+      // Define mensagem padrão se o campo estiver vazio
+      if (prompt === "") {
+        prompt = "Médico, me ajude";
+      }
+
+      // Adiciona a mensagem do usuário ao chat
+      addMessage(prompt, 'user');
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = await response.text();
+
+      // Adiciona a resposta da IA ao chat
+      addMessage(text, 'ai');
+      
+      // Limpa o textarea
+      document.getElementById("prompt").value = '';
+    }
+
+    function addMessage(text, sender) {
+      const chatContainer = document.getElementById("chat-container");
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("message", sender === 'user' ? 'user-message' : 'ai-message');
+      messageDiv.textContent = text;
+      chatContainer.appendChild(messageDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight; // Rola para a última mensagem
+    }
+
+    const botao = document.getElementById('botao_enviar');
+    botao.addEventListener('click', run);
+
+    // Adiciona evento de tecla ao textarea
+    const promptInput = document.getElementById('prompt');
+    promptInput.addEventListener('keypress', function (event) {
+      if (event.key === 'Enter') {
+        event.preventDefault(); // Evita nova linha
+        run(); // Chama a função de enviar
+      }
+    });
+  </script>
 </body>
 
 </html>
-<script type="importmap">
-  {
-    "imports": {
-      "@google/generative-ai": "https://esm.run/@google/generative-ai"
-    }
-  }
-</script>
-<script type="module">
-  import { GoogleGenerativeAI } from "@google/generative-ai";
-
-  // Fetch your API_KEY
-  const API_KEY = "AIzaSyADID51Xqt_CDvL1fpkHVmOysANMp3U_L4";
-
-  // Access your API key (see "Set up your API key" above)
-  const genAI = new GoogleGenerativeAI(API_KEY);
-
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-  async function run() {
-    const prompt = "Você é neurologista e precisa me ajudar, e você fala apenas sobre neurologia"
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    document.getElementById("resposta").value = text;
-    console.log(text);
-  }
-  const botao = document.getElementById('botao_enviar');
-  botao.addEventListener('click', function () {
-    run();
-  });
-  run();
-
-</script>
