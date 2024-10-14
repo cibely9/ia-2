@@ -3,22 +3,88 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="hello.js"> </script>
+  <script src="hello.js"></script>
   <link rel="stylesheet" href="style.css">
-  <title>Medico</title>
-
+  <title>NeuroChat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"> <!-- Fonte do Google -->
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh; 
+      margin: 0;
+      background-color: #f7f9fc; /* Cor de fundo neutra */
+      font-family: 'Poppins', sans-serif; /* Fonte divertida */
+      text-align: center;
+    }
+    h1 {
+      color: #34495e; /* Azul escuro neutro */
+      margin-bottom: 20px; 
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Sombra do texto */
+      font-size: 2.5em; /* Tamanho maior */
+      font-weight: 500; /* Peso da fonte */
+    }
+    textarea {
+      width: 500px; /* Aumentando a largura */
+      height: 200px; /* Aumentando a altura */
+      padding: 10px; 
+      border: 2px solid #bdc3c7; /* Borda cinza */
+      border-radius: 8px; 
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+      margin-bottom: 10px; 
+      font-size: 16px; /* Aumentando o tamanho da fonte */
+      font-family: 'Poppins', sans-serif; /* Fonte no textarea */
+      transition: border-color 0.3s, box-shadow 0.3s; /* Transição suave */
+    }
+    textarea:focus {
+      border-color: #2980b9; /* Azul ao focar */
+      box-shadow: 0 0 10px rgba(41, 128, 185, 0.5); /* Sombra ao focar */
+      outline: none; /* Remove contorno padrão */
+    }
+    input[type="button"] {
+      padding: 12px 24px; /* Aumentando o tamanho do botão */
+      border: none; 
+      border-radius: 8px; 
+      background-color: #2980b9; /* Azul */
+      color: white; 
+      font-size: 16px; 
+      cursor: pointer; 
+      transition: background-color 0.3s, transform 0.2s; /* Transição suave */
+      font-weight: 500; /* Peso da fonte do botão */
+    }
+    input[type="button"]:hover {
+      background-color: #1a5987; /* Azul escuro ao passar o mouse */
+      transform: scale(1.05); /* Leve aumento ao passar o mouse */
+    }
+    label {
+      color: #34495e; /* Azul escuro neutro */
+      margin-top: 20px; /* Espaçamento acima do rótulo */
+      font-size: 1.2em; /* Tamanho maior */
+      font-weight: 400; /* Peso da fonte */
+    }
+    footer {
+      margin-top: 20px; 
+      color: #7f8c8d; /* Cinza */
+      font-size: 14px; 
+    }
+  </style>
 </head>
 <body>
-
-<body>
-  <textarea cols="40" rows="10" name="prompt" id="prompt" placeholder="Digite seu prompt aqui..."></textarea>
+  <h1>NeuroChat</h1>
+  <textarea name="prompt" id="prompt" placeholder="Digite seu prompt aqui..."></textarea>
   <br>
   <input type="button" value="Enviar" onclick="run()"/>
   <br>
   <br>
   <label for="resposta">Resposta de IA:</label>
   <br>
-  <textarea cols="40" rows="10" name="resposta" id="resposta" readonly></textarea>
+  <textarea name="resposta" id="resposta" readonly></textarea>
+
+  <footer>
+    <p>Autor: Cibely Jorge</p>
+  </footer>
 </body>
 </html>
 <script type="importmap">
@@ -28,8 +94,3 @@
     }
   }
 </script>
-<html>
-<body>
- 
-</body>
-</html>
