@@ -33,7 +33,7 @@
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       padding: 20px;
       width: 100%;
-      max-width: 500px; /* Maximum width */
+      max-width: 500px;
       height: 400px;
       overflow-y: auto;
       display: flex;
@@ -49,12 +49,12 @@
     }
 
     .user-message {
-      background-color: #d1e7dd; /* Verde claro */
+      background-color: #d1e7dd;
       align-self: flex-end;
     }
 
     .ai-message {
-      background-color: #f8d7da; /* Vermelho claro */
+      background-color: #f8d7da;
       align-self: flex-start;
     }
 
@@ -75,12 +75,12 @@
       color: white;
       border: none;
       border-radius: 25px;
-      padding: 10px 18px; /* Increased padding */
-      font-size: 16px; /* Larger font size */
+      padding: 10px 18px;
+      font-size: 16px;
       cursor: pointer;
       transition: background-color 0.3s, transform 0.3s;
       margin-top: 10px;
-      width: auto; /* Allow the button to size based on content */
+      width: auto;
     }
 
     input[type="button"]:hover {
@@ -98,23 +98,22 @@
       color: #666;
     }
 
-    /* Media Queries */
     @media (max-width: 600px) {
       .chat-container {
-        height: 300px; /* Reduced height for smaller screens */
+        height: 300px;
       }
 
       h1 {
-        font-size: 24px; /* Adjust heading size */
+        font-size: 24px;
       }
 
       textarea {
-        height: 50px; /* Adjust textarea size */
+        height: 50px;
       }
 
       input[type="button"] {
-        padding: 10px 16px; /* Adjust padding for smaller screens */
-        font-size: 16px; /* Adjust button font */
+        padding: 10px 16px;
+        font-size: 16px;
       }
     }
   </style>
@@ -143,32 +142,43 @@
   <script type="module">
     import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    // Fetch your API_KEY
     const API_KEY = "AIzaSyADID51Xqt_CDvL1fpkHVmOysANMp3U_L4";
-
-    // Access your API key
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     async function run() {
       let prompt = document.getElementById("prompt").value.trim();
 
-      // Define mensagem padrão se o campo estiver vazio
       if (prompt === "") {
-        prompt = "Médico, me ajude";
+        prompt = "Quais são os cuidados essenciais para a saúde cerebral?";
       }
 
-      // Adiciona a mensagem do usuário ao chat
+      // O modelo deve responder como um neurologista
+      const fullPrompt = "Você é um neurologista. Responda como um médico a seguinte pergunta: " + prompt;
+
       addMessage(prompt, 'user');
 
-      const result = await model.generateContent(prompt);
+      const result = await model.generateContent(fullPrompt);
       const response = await result.response;
       const text = await response.text();
 
-      // Adiciona a resposta da IA ao chat
-      addMessage(text, 'ai');
+      // Respostas padrão como um neurologista
+      const neuroResponses = [
+        "Recomendo que você mantenha uma alimentação equilibrada, rica em ômega-3, antioxidantes e vitaminas.",
+        "A prática regular de exercícios físicos é fundamental para manter a saúde cerebral.",
+        "É essencial ter uma boa qualidade de sono. Tente estabelecer uma rotina de sono saudável.",
+        "Se estiver enfrentando problemas de memória, é importante fazer uma avaliação com um especialista.",
+        "Estimular a mente com leitura, quebra-cabeças e aprendizado contínuo pode ser muito benéfico."
+      ];
+
+      // Verifica a relevância da resposta gerada
+      if (!text || text.length < 10) {
+        const randomResponse = neuroResponses[Math.floor(Math.random() * neuroResponses.length)];
+        addMessage(randomResponse, 'ai');
+      } else {
+        addMessage(text, 'ai');
+      }
       
-      // Limpa o textarea
       document.getElementById("prompt").value = '';
     }
 
@@ -178,18 +188,17 @@
       messageDiv.classList.add("message", sender === 'user' ? 'user-message' : 'ai-message');
       messageDiv.textContent = text;
       chatContainer.appendChild(messageDiv);
-      chatContainer.scrollTop = chatContainer.scrollHeight; // Rola para a última mensagem
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     const botao = document.getElementById('botao_enviar');
     botao.addEventListener('click', run);
 
-    // Adiciona evento de tecla ao textarea
     const promptInput = document.getElementById('prompt');
     promptInput.addEventListener('keypress', function (event) {
       if (event.key === 'Enter') {
-        event.preventDefault(); // Evita nova linha
-        run(); // Chama a função de enviar
+        event.preventDefault();
+        run();
       }
     });
   </script>
