@@ -80,7 +80,6 @@
       cursor: pointer;
       transition: background-color 0.3s, transform 0.3s;
       margin-top: 10px;
-      width: auto;
     }
 
     input[type="button"]:hover {
@@ -124,10 +123,11 @@
   <div class="chat-container" id="chat-container">
     <!-- Mensagens serão adicionadas aqui -->
   </div>
-  
+
   <textarea name="prompt" id="prompt" placeholder="Digite seu prompt aqui..."></textarea>
   <input type="button" value="Enviar" id="botao_enviar" />
-  
+  <input type="button" value="Limpar Histórico" id="botao_limpar" />
+
   <footer>
     <p>Autora: Cibely Jorge</p>
   </footer>
@@ -146,42 +146,29 @@
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    async function run() {
-      let prompt = document.getElementById("prompt").value.trim();
-
-      if (prompt === "") {
-        prompt = "Quais são os cuidados essenciais para a saúde cerebral?";
-      }
-
-      // O modelo deve responder como um neurologista
-      const fullPrompt = "Você é um neurologista. Responda como um médico a seguinte pergunta: " + prompt;
-
-      addMessage(prompt, 'user');
-
-      const result = await model.generateContent(fullPrompt);
-      const response = await result.response;
-      const text = await response.text();
-
-      // Respostas padrão como um neurologista
-      const neuroResponses = [
-        "Recomendo que você mantenha uma alimentação equilibrada, rica em ômega-3, antioxidantes e vitaminas.",
-        "A prática regular de exercícios físicos é fundamental para manter a saúde cerebral.",
-        "É essencial ter uma boa qualidade de sono. Tente estabelecer uma rotina de sono saudável.",
-        "Se estiver enfrentando problemas de memória, é importante fazer uma avaliação com um especialista.",
-        "Estimular a mente com leitura, quebra-cabeças e aprendizado contínuo pode ser muito benéfico."
-      ];
-
-      // Verifica a relevância da resposta gerada
-      if (!text || text.length < 10) {
-        const randomResponse = neuroResponses[Math.floor(Math.random() * neuroResponses.length)];
-        addMessage(randomResponse, 'ai');
-      } else {
-        addMessage(text, 'ai');
-      }
-      
-      document.getElementById("prompt").value = '';
+    // Salva histórico no localStorage
+    function saveHistory(message, sender) {
+      const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+      history.push({ text: message, sender: sender, timestamp: new Date().toISOString() });
+      localStorage.setItem('chatHistory', JSON.stringify(history));
     }
 
+    // Carrega histórico do localStorage
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+      history.forEach(entry => {
+        addMessage(entry.text, entry.sender);
+      });
+    }
+
+    // Limpa o histórico de conversas
+    function clearHistory() {
+      localStorage.removeItem('chatHistory');
+      const chatContainer = document.getElementById("chat-container");
+      chatContainer.innerHTML = ""; // Limpa a interface
+    }
+
+    // Adiciona mensagem à interface
     function addMessage(text, sender) {
       const chatContainer = document.getElementById("chat-container");
       const messageDiv = document.createElement("div");
@@ -191,8 +178,51 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    const botao = document.getElementById('botao_enviar');
-    botao.addEventListener('click', run);
+    // Lógica principal do chatbot
+    async function run() {
+      let prompt = document.getElementById("prompt").value.trim();
+
+      if (!prompt) {
+        alert("Por favor, insira uma mensagem antes de enviar.");
+        return;
+      }
+
+      addMessage(prompt, 'user');
+      saveHistory(prompt, 'user');
+
+      const fullPrompt = "Você é um neurologista. Responda como um médico a seguinte pergunta: " + prompt;
+
+      try {
+        const result = await model.generateContent(fullPrompt);
+        const response = await result.response;
+        const text = await response.text();
+
+        if (text && text.trim().length > 0) {
+          addMessage(text, 'ai');
+          saveHistory(text, 'ai');
+        } else {
+          const fallback = "Desculpe, não consegui processar sua solicitação. Tente novamente.";
+          addMessage(fallback, 'ai');
+          saveHistory(fallback, 'ai');
+        }
+      } catch (error) {
+        console.error("Erro ao gerar resposta:", error);
+        const fallback = "Desculpe, ocorreu um erro ao processar sua solicitação. Tente novamente.";
+        addMessage(fallback, 'ai');
+        saveHistory(fallback, 'ai');
+      }
+
+      document.getElementById("prompt").value = '';
+    }
+
+    // Eventos
+    document.addEventListener('DOMContentLoaded', loadHistory);
+
+    const botaoEnviar = document.getElementById('botao_enviar');
+    botaoEnviar.addEventListener('click', run);
+
+    const botaoLimpar = document.getElementById('botao_limpar');
+    botaoLimpar.addEventListener('click', clearHistory);
 
     const promptInput = document.getElementById('prompt');
     promptInput.addEventListener('keypress', function (event) {
